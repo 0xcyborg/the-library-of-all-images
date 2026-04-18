@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Library of All Images</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="cosmos" id="cosmos"></div>
+
+<header>
+  <div class="ornament">✦ ✦ ✦</div>
+  <h1>The Library of<br><em>All Images</em></h1>
+  <div class="subtitle">An infinite archive of every picture that could possibly exist</div>
+</header>
+
+<div class="divider"></div>
+
+<p class="inscription">
+  Every photograph ever taken, every painting ever made, every face ever seen —
+  and every image that has never been seen and never will be — exists here,
+  waiting in the darkness of pure combinatorial space.
+</p>
+
+<div class="gallery-wrapper">
+
+  <div class="controls">
+    <div class="address-bar">
+      <span class="address-label">Address</span>
+      <input type="text" id="addressInput" placeholder="Enter any number or text to seek an image…">
+    </div>
+    <button class="btn primary" id="seekBtn">Seek</button>
+    <button class="btn" id="randomBtn">Random</button>
+    <div class="size-selector">
+      <button class="size-btn active" data-size="8">8</button>
+      <button class="size-btn" data-size="16">16</button>
+      <button class="size-btn" data-size="32">32</button>
+      <button class="size-btn" data-size="64">64</button>
+      <button class="size-btn" data-size="128">128</button>
+      <button class="size-btn" data-size="256">256</button>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn" id="prevBtnTop">← Prev</button>
+    <div class="page-counter" id="pageCounter">Page 1</div>
+    <button class="btn" id="nextBtnTop">Next →</button>
+  </div>
+
+  <div class="image-grid" id="imageGrid"></div>
+
+  <div class="nav-row" style="margin-top:32px; margin-bottom:0">
+    <button class="btn" id="prevBtnBottom">← Prev</button>
+    <button class="btn" id="nextBtnBottom">Next →</button>
+  </div>
+
+</div>
+
+<div class="universe-stat">
+  <span class="big-number" id="totalCount">—</span>
+  total possible images at current resolution
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <button class="modal-close" id="modalCloseBtn">✕ Close</button>
+    <div class="modal-canvas-wrap">
+      <canvas id="modalCanvas"></canvas>
+    </div>
+    <div class="modal-info" id="modalInfo"></div>
+    <div class="modal-addr" id="modalAddr"></div>
+    <div class="modal-actions">
+      <button class="btn" id="copyAddrBtn">Copy Address</button>
+      <button class="btn primary" id="downloadBtn">Download</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
