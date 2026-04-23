@@ -48,14 +48,14 @@ function initStars() {
 function splitmix64(state) {
   state = state + BigInt("0x9e3779b97f4a7c15");
   let z = state;
-  z = BigInt.asIntN(64, z);  // Ensure proper 64-bit wrapping
+  z = BigInt.asUintN(64, z);  // Ensure proper 64-bit wrapping
   z = (z ^ (z >> 30n)) * BigInt("0xbf58476d1ce4e5b9");
-  z = BigInt.asIntN(64, z);
+  z = BigInt.asUintN(64, z);
   z = z ^ (z >> 27n);
   z = (z * BigInt("0x94d049bb133111eb"));
-  z = BigInt.asIntN(64, z);
+  z = BigInt.asUintN(64, z);
   z = z ^ (z >> 31n);
-  z = BigInt.asIntN(64, z);
+  z = BigInt.asUintN(64, z);
   return z;
 }
 
@@ -95,20 +95,19 @@ function drawToCanvas(canvas, seed, size) {
 
   // Initialize PRNG state from seed (normalized)
   let state = normalizeSeed(seed);
-  let counter = BigInt(0);
 
-  // Generate pixels: splitmix64(state + counter) produces pseudo-random bytes
+  // Generate pixels: advance state sequentially to prevent overlapping images
   for (let i = 0, p = 0; i < n; i++, p += 4) {
-    // Advance state and extract 24 bits (3 bytes) for RGB
-    const newState = splitmix64(state + counter);
+    // Extract 24 bits (3 bytes) for RGB
+    const newState = splitmix64(state);
     const lo = Number(newState & 0xFFFFFFn);
     data[p]     = lo & 0xFF;
     data[p + 1] = (lo >> 8) & 0xFF;
     data[p + 2] = (lo >> 16) & 0xFF;
     data[p + 3] = 255;
 
-    // Advance counter for next pixel
-    counter++;
+    // Advance state by the golden ratio constant for the next pixel
+    state = state + BigInt("0x9e3779b97f4a7c15");
   }
   ctx.putImageData(imageData, 0, 0);
 }
