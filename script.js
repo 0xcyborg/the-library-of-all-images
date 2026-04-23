@@ -89,7 +89,7 @@ function hexAdd(h1, h2) {
     }
   }
   if (carry > 0n) res = carry.toString(16) + res;
-  return res.replace(/^0+(?=\d)/, '') || '0';
+  return res.replace(/^0+(?=.)/, '') || '0';
 }
 
 function hexSub(hex, n) {
@@ -113,7 +113,7 @@ function hexSub(hex, n) {
     }
     res = val.toString(16).padStart(part.length, '0') + res;
   }
-  return res.replace(/^0+(?=\d)/, '') || '0';
+  return res.replace(/^0+(?=.)/, '') || '0';
 }
 
 function hexMul(hex, n) {
