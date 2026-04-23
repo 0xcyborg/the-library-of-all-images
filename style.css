@@ -192,6 +192,83 @@ h1 em {
   color: var(--parchment);
 }
 
+.btn.loading-btn {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Status Overlay */
+.gallery-wrapper {
+  position: relative; /* For overlay positioning */
+}
+
+.status-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 8, 6, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  border: 1px solid rgba(201,150,42,0.1);
+}
+
+.status-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.status-content {
+  text-align: center;
+  animation: modalIn 0.5s ease-out;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.status-shimmer {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 0 auto 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.status-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+  animation: scan 1.5s infinite linear;
+}
+
+@keyframes scan {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+.status-text {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.status-subtext {
+  font-size: 0.75rem;
+  color: var(--sepia);
+  opacity: 0.7;
+}
+
 /* Size selector */
 .size-selector {
   display: flex;
