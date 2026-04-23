@@ -64,7 +64,6 @@ function splitmix64(state) {
 function normalizeSeed(seed) {
   // Ensure seed is a positive BigInt
   if (seed < 0n) seed = -seed;
-  if (seed === 0n) seed = 1n;
   return seed;
 }
 
@@ -106,8 +105,8 @@ function drawToCanvas(canvas, seed, size) {
     data[p + 2] = (lo >> 16) & 0xFF;
     data[p + 3] = 255;
 
-    // Advance state by the golden ratio constant for the next pixel
-    state = state + BigInt("0x9e3779b97f4a7c15");
+    // Advance state using the non-linear PRNG output for the next pixel
+    state = newState;
   }
   ctx.putImageData(imageData, 0, 0);
 }
