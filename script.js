@@ -92,21 +92,32 @@ function drawToCanvas(canvas, seed, size) {
   const data = imageData.data;
   const n = size * size;
 
-  // Initialize PRNG state from seed (normalized)
-  let state = normalizeSeed(seed);
+  let currentSeed = normalizeSeed(seed);
+  let state = 0n;
+
+  // Fast extraction for massive BigInts to prevent UI freeze
+  const hexStr = currentSeed.toString(16);
+  const len = hexStr.length;
 
   // Generate pixels: advance state sequentially to prevent overlapping images
   for (let i = 0, p = 0; i < n; i++, p += 4) {
+    // Extract 24 bits (6 hex chars) from the arbitrary BigInt seed
+    const end = Math.max(0, len - i * 6);
+    const start = Math.max(0, len - (i + 1) * 6);
+    const chunk = start < end ? hexStr.slice(start, end) : '0';
+    const seedChunk = BigInt('0x' + chunk);
+
+    // Mix seed chunk and pixel index into state to prevent pixel-shifting bug
+    // and to incorporate the entire arbitrary length seed.
+    state = state ^ seedChunk ^ BigInt(i);
+    state = splitmix64(state);
+
     // Extract 24 bits (3 bytes) for RGB
-    const newState = splitmix64(state);
-    const lo = Number(newState & 0xFFFFFFn);
+    const lo = Number(state & 0xFFFFFFn);
     data[p]     = lo & 0xFF;
     data[p + 1] = (lo >> 8) & 0xFF;
     data[p + 2] = (lo >> 16) & 0xFF;
     data[p + 3] = 255;
-
-    // Advance state using the non-linear PRNG output for the next pixel
-    state = newState;
   }
   ctx.putImageData(imageData, 0, 0);
 }
@@ -197,10 +208,11 @@ function scrollToGallery() {
 
 function randomPage() {
   // Generate a very large random BigInt for full coverage
-  const rand = BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
-  const multiplier = BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + 1);
-  const extra = BigInt(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) + 1);
-  currentPage = rand * multiplier * extra;
+  const bytes = gridSize * gridSize * 3;
+  const hexChars = bytes * 2;
+  const hex = '0x' + Array.from({length: hexChars}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+  const seed = BigInt(hex);
+  currentPage = seed / BigInt(perPage());
   renderGrid();
 }
 
