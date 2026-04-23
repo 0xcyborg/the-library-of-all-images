@@ -301,6 +301,9 @@ h1 em {
   box-shadow: 0 0 80px rgba(0,0,0,0.8);
   transform: translateY(10px);
   transition: transform 0.3s;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .modal-overlay.open .modal { transform: translateY(0); }
@@ -347,12 +350,15 @@ h1 em {
 
 .modal-addr {
   word-break: break-all;
+  overflow-wrap: anywhere;
   color: rgba(245,237,224,0.35);
   font-size: 0.6rem;
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid rgba(201,150,42,0.12);
   line-height: 1.6;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .modal-addr span { color: var(--gold); display: block; margin-bottom: 4px; font-size: 0.65rem; }
@@ -408,6 +414,10 @@ h1 em {
   align-items: center;
   padding: 0 16px;
   letter-spacing: 0.08em;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Found image indicator */
