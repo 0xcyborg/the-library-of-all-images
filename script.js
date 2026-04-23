@@ -305,52 +305,58 @@ function updateTotalCount() {
 
 // ─── Render grid (async, frame-chunked) ──────────────────────────────────────
 function renderGrid() {
-  const gen = ++renderGeneration;
-  imageGrid.innerHTML = '';
-  imageGrid.style.gridTemplateColumns = `repeat(auto-fill, minmax(${gridMinSize()}px, 1fr))`;
-  const start = pageStartSeed();
-  const count = perPage();
-  updateTotalCount();
+  return new Promise(resolve => {
+    const gen = ++renderGeneration;
+    imageGrid.innerHTML = '';
+    imageGrid.style.gridTemplateColumns = `repeat(auto-fill, minmax(${gridMinSize()}px, 1fr))`;
+    const start = pageStartSeed();
+    const count = perPage();
+    updateTotalCount();
 
-  pageCounter.textContent = `Page ${formatPageNumber(hexAdd(currentPage, 1))} · ${gridSize}×${gridSize}px`;
+    pageCounter.textContent = `Page ${formatPageNumber(hexAdd(currentPage, 1))} · ${gridSize}×${gridSize}px`;
 
-  const cards = [];
-  for (let i = 0; i < count; i++) {
-    const seed = hexAdd(start, i);
-    const card = document.createElement('div');
-    card.className = 'image-card loading';
-    const wrap = document.createElement('div');
-    wrap.className = 'canvas-wrap';
-    wrap.style.background = '#0a0806';
-    const canvas = document.createElement('canvas');
-    canvas.width = 1; canvas.height = 1; 
-    const addr = document.createElement('div');
-    addr.className = 'card-addr';
-    addr.textContent = formatAddress(seed);
-    wrap.appendChild(canvas);
-    card.appendChild(wrap);
-    card.appendChild(addr);
-    card.addEventListener('click', () => openModal(seed));
-    imageGrid.appendChild(card);
-    cards.push({ card, canvas, seed });
-  }
-
-  // Render canvases in batches across animation frames to stay responsive
-  const BATCH = gridSize >= 128 ? 1 : gridSize >= 64 ? 2 : 4;
-  let idx = 0;
-
-  function renderBatch() {
-    if (gen !== renderGeneration) return; // stale — abort
-    const end = Math.min(idx + BATCH, cards.length);
-    for (let j = idx; j < end; j++) {
-      const { card, canvas, seed } = cards[j];
-      drawToCanvas(canvas, seed, gridSize);
-      card.classList.remove('loading');
+    const cards = [];
+    for (let i = 0; i < count; i++) {
+      const seed = hexAdd(start, i);
+      const card = document.createElement('div');
+      card.className = 'image-card loading';
+      const wrap = document.createElement('div');
+      wrap.className = 'canvas-wrap';
+      wrap.style.background = '#0a0806';
+      const canvas = document.createElement('canvas');
+      canvas.width = 1; canvas.height = 1; 
+      const addr = document.createElement('div');
+      addr.className = 'card-addr';
+      addr.textContent = formatAddress(seed);
+      wrap.appendChild(canvas);
+      card.appendChild(wrap);
+      card.appendChild(addr);
+      card.addEventListener('click', () => openModal(seed));
+      imageGrid.appendChild(card);
+      cards.push({ card, canvas, seed });
     }
-    idx = end;
-    if (idx < cards.length) requestAnimationFrame(renderBatch);
-  }
-  requestAnimationFrame(renderBatch);
+
+    // Render canvases in batches across animation frames to stay responsive
+    const BATCH = gridSize >= 128 ? 1 : gridSize >= 64 ? 2 : 4;
+    let idx = 0;
+
+    function renderBatch() {
+      if (gen !== renderGeneration) {
+        resolve(); // stale — abort
+        return;
+      }
+      const end = Math.min(idx + BATCH, cards.length);
+      for (let j = idx; j < end; j++) {
+        const { card, canvas, seed } = cards[j];
+        drawToCanvas(canvas, seed, gridSize);
+        card.classList.remove('loading');
+      }
+      idx = end;
+      if (idx < cards.length) requestAnimationFrame(renderBatch);
+      else resolve();
+    }
+    requestAnimationFrame(renderBatch);
+  });
 }
 
 // ─── Format helpers ──────────────────────────────────────────────────────────
@@ -391,7 +397,7 @@ async function randomPage() {
     const hexChars = bytes * 2;
     const hex = Array.from({length: hexChars}, () => Math.floor(Math.random() * 16).toString(16)).join('');
     currentPage = hexDiv(hex, perPage());
-    renderGrid();
+    await renderGrid();
   } finally {
     btn.classList.remove('loading-btn');
     overlay.classList.remove('active');
@@ -459,11 +465,11 @@ async function seekImage() {
     const max = maxSeedHex();
     if (hexCompare(seed, max) > 0) {
       showToast(`Address exceeds the ${gridSize}×${gridSize} library space — max is ${gridSize*gridSize*3*2} hex digits.`);
+      scrollToGallery();
       return;
     }
     currentPage = hexDiv(seed, perPage());
-    renderGrid();
-    await new Promise(r => setTimeout(r, 100));
+    await renderGrid();
     const idx = hexMod(seed, perPage());
     if (imageGrid.children[idx]) {
       imageGrid.children[idx].style.outline = '2px solid rgba(196,75,30,0.8)';
