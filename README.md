@@ -6,16 +6,16 @@ An infinite, procedural archive of every possible image that could exist within 
 
 **The Library of All Images** doesn't store a single image file. Instead, it generates them dynamically using a BigInt-based Splitmix64 algorithm. Every string of text or numeric address corresponds uniquely to a seed, which in turn deterministically generates an image pixel by pixel.
 
-Because the seed space is practically infinite (limited only by BigInt memory and maximum address length), the library contains every possible combination of pixels for the given grid sizes (from 8x8 up to 256x256). 
+Because the seed space is practically infinite (limited only by maximum address string length and computational constraints), the library contains every possible combination of pixels for the given grid sizes (from 8x8 up to 256x256). 
 
 ## Architecture & Patterns
 
 The project is built as a pure Vanilla web application with no external dependencies (beyond Google Fonts).
 
 ### 1. Procedural Generation Engine (`script.js`)
-* **State Management**: Uses `BigInt` for all seeds and pagination calculations to avoid JavaScript's `Number.MAX_SAFE_INTEGER` limits, enabling exploration deep into the combinatorial space.
-* **PRNG (Splitmix64)**: An extended Splitmix64 algorithm operates on 64-bit chunks to generate RGB values for each pixel. It advances state sequentially to ensure every image is unique and prevents visual overlap.
-* **Text Hashing**: A custom hashing function converts any text input ("Address") into a BigInt seed, allowing users to search for images using words, names, or random phrases.
+* **State Management**: Uses a custom suite of **chunk-based hexadecimal string arithmetic** (`hexAdd`, `hexMul`, etc.) for all seeds and pagination calculations. This architectural shift bypasses standard `BigInt` allocation limits (`RangeError`) when navigating the astronomical combinatorial space of a 256x256 grid.
+* **PRNG (Splitmix64)**: An extended Splitmix64 algorithm operates on `BigInt` to generate RGB values for each pixel. The massive hex string addresses are chunked into smaller segments and continuously mixed into the PRNG state, ensuring every image is unique and preventing visual overlap.
+* **Text Hashing**: A custom, recursive hashing function converts any text input ("Address") into a hexadecimal string seed. It operates asynchronously to prevent main-thread blocking when computing massive text inputs, allowing users to search using words, names, or random phrases.
 
 ### 2. Performance & Rendering Constraints
 * **Batched Asynchronous Rendering**: Calculating raw pixel data for multiple 256x256 canvases sequentially would lock the main thread. The library mitigates this by chunking the canvas rendering process across multiple `requestAnimationFrame` cycles, keeping the UI responsive.
@@ -25,7 +25,7 @@ The project is built as a pure Vanilla web application with no external dependen
 * **Aesthetic**: Utilizes a cosmic, "dark academia" aesthetic with warm sepia/gold accents, a starry animated background, and typography blending *IM Fell English* (classic) and *Space Mono* (technical).
 * **Interactions**: 
   * "Seek" functionality to jump to specific coordinate addresses.
-  * Modal overlay for inspecting individual images, showing precise BigInt coordinates and allowing downloads.
+  * Modal overlay for inspecting individual images, showing precise hexadecimal coordinates and allowing downloads.
   * Grain overlay and shimmer loading animations to enhance the analog, atmospheric feel.
 
 ## Getting Started
