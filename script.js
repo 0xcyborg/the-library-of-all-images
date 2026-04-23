@@ -139,7 +139,7 @@ function hexMul(hex, n) {
       }
     }
     if (carry > 0n) out = carry.toString(16) + out;
-    return out.replace(/^0+(?=\d)/, '') || '0';
+    return out.replace(/^0+(?=.)/, '') || '0';
   }
   // General case: schoolbook multiplication for two large hex strings.
   // Split s2 into 12-char chunks and sum shifted partial products.
