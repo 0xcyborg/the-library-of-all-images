@@ -3,6 +3,7 @@ let currentPage = '0'; // Hex string
 let gridSize = 8;
 let renderGeneration = 0; 
 let modalSeed = null;
+let seekRunning = false; // Guard against concurrent seekImage() invocations
 
 // ─── DOM References ───────────────────────────────────────────────────────────
 const cosmos = document.getElementById('cosmos');
@@ -233,11 +234,12 @@ async function textToHex(text) {
   if (/^[0-9a-fA-F]+$/i.test(text) && /[a-fA-F]/.test(text)) return text.toLowerCase();
   
   if (text.length < 100000) {
-    try {
-      let h = 0n;
-      for (let i = 0; i < text.length; i++) h = (h << 7n) + BigInt(text.charCodeAt(i));
-      return h.toString(16);
-    } catch (e) {}
+    // No try/catch: if an error occurs here it must propagate, not silently fall
+    // through to the recursive path which uses a different algorithm and would
+    // produce a different address for the same input, breaking determinism.
+    let h = 0n;
+    for (let i = 0; i < text.length; i++) h = (h << 7n) + BigInt(text.charCodeAt(i));
+    return h.toString(16);
   }
 
   // Yield for UI responsiveness
@@ -445,7 +447,8 @@ function showToast(msg, type = 'error') {
 
 async function seekImage() {
   const val = addressInput.value.trim();
-  if (!val) return;
+  if (!val || seekRunning) return; // Ignore rapid re-invocations
+  seekRunning = true;
   const btn = document.getElementById('seekBtn');
   const overlay = document.getElementById('statusOverlay');
   btn.classList.add('loading-btn');
@@ -468,6 +471,7 @@ async function seekImage() {
       imageGrid.children[idx].scrollIntoView({behavior:'smooth', block:'nearest'});
     }
   } finally {
+    seekRunning = false;
     btn.classList.remove('loading-btn');
     overlay.classList.remove('active');
   }
