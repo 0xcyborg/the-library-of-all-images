@@ -166,7 +166,7 @@ function hexDiv(hex, n) {
     res += (val / d).toString(16).padStart(i === 0 ? 0 : part.length, '0');
     rem = val % d;
   }
-  return res.replace(/^0+(?=\d)/, '') || '0';
+  return res.replace(/^0+(?=.)/, '') || '0';
 }
 
 function hexMod(hex, n) {
