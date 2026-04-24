@@ -1,12 +1,12 @@
 # The Library of All Images
 
-An infinite, procedural archive of every possible image that could exist within a defined pixel grid, generated entirely on the client side. Inspired by concepts like Borges' *The Library of Babel*, this project maps an infinite coordinate space (addresses) to procedural images using a deterministic pseudo-random number generator (PRNG).
+An astronomically large, procedural archive of every possible image that could exist within a defined pixel grid, generated entirely on the client side. Inspired by concepts like Borges' *The Library of Babel*, this project maps a near-infinite coordinate space (addresses) to procedural images using a deterministic pseudo-random number generator (PRNG).
 
 ## Overview
 
-**The Library of All Images** doesn't store a single image file. Instead, it generates them dynamically using a BigInt-based Splitmix64 algorithm. Every string of text or numeric address corresponds uniquely to a seed, which in turn deterministically generates an image pixel by pixel.
+**The Library of All Images** doesn't store a single image file. Instead, it generates them dynamically using a BigInt-based Splitmix64 algorithm. Every string of text or numeric address deterministically maps to a seed, which in turn algorithmically generates an image pixel by pixel.
 
-Because the seed space is practically infinite (limited only by maximum address string length and computational constraints), the library contains every possible combination of pixels for the given grid sizes (from 8x8 up to 256x256). 
+The seed space maps exactly to the mathematical permutations of the grid. For instance, an 8x8 image with 24-bit RGB color has 256^(8×8×3) or 256^192 possible combinations. For a 256x256 grid, this scales to an unfathomable 256^196,608 possible images. While astronomically large, this coordinate space is strictly bounded, providing a dedicated address slot for every single combination of pixels.
 
 ## Architecture & Patterns
 
@@ -14,8 +14,8 @@ The project is built as a pure Vanilla web application with no external dependen
 
 ### 1. Procedural Generation Engine (`script.js`)
 * **State Management**: Uses a custom suite of **chunk-based hexadecimal string arithmetic** (`hexAdd`, `hexMul`, etc.) for all seeds and pagination calculations. This architectural shift bypasses standard `BigInt` allocation limits (`RangeError`) when navigating the astronomical combinatorial space of a 256x256 grid.
-* **PRNG (Splitmix64)**: An extended Splitmix64 algorithm operates on `BigInt` to generate RGB values for each pixel. The massive hex string addresses are chunked into smaller segments and continuously mixed into the PRNG state, ensuring every image is unique and preventing visual overlap.
-* **Text Hashing**: A custom, recursive hashing function converts any text input ("Address") into a hexadecimal string seed. It operates asynchronously to prevent main-thread blocking when computing massive text inputs, allowing users to search using words, names, or random phrases.
+* **PRNG (Splitmix64)**: An extended Splitmix64 algorithm operates on `BigInt` to generate RGB values for each pixel. The massive hex string addresses are chunked into smaller segments and continuously mixed into the PRNG state, maximizing entropy and preventing visual overlap.
+* **Input Parsing & Hashing**: The system intelligently routes inputs (decimal, hex, or general text) at the top level. Custom, recursive algorithms asynchronously convert massive text strings or astronomical decimal numbers into hexadecimal seeds without blocking the main thread, allowing searches via words, names, or massive numeric coordinates.
 
 ### 2. Performance & Rendering Constraints
 * **Batched Asynchronous Rendering**: Calculating raw pixel data for multiple 256x256 canvases sequentially would lock the main thread. The library mitigates this by chunking the canvas rendering process across multiple `requestAnimationFrame` cycles, keeping the UI responsive.
@@ -33,7 +33,7 @@ The project is built as a pure Vanilla web application with no external dependen
 Because this is a pure Vanilla web application with no build step, modules, or bundlers, you can run the project simply by opening the `index.html` file directly in any modern web browser. No local web server is required.
 
 ## Features
-* **Infinite Exploration**: Browse sequentially or jump to completely random coordinates in the infinite space.
+* **Boundless Exploration**: Browse sequentially or jump to completely random coordinates in the massive library space.
 * **Variable Resolutions**: Toggle between 8x8, 16x16, 32x32, 64x64, 128x128, and 256x256 pixel grid images.
 * **Deterministic Output**: The exact same address will always yield the exact same image, allowing coordinates to be shared.
 * **Export**: Images can be downloaded directly from the inspection modal as PNGs.
