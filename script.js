@@ -225,6 +225,12 @@ async function decimalToHex(dec) {
 }
 
 // ─── Text/number → Hex Address ────────────────────────────────────────────────
+
+// Public entry point: trims ONCE and routes based on the input type.
+// All routing decisions (decimal number, hex address, general text) are made
+// HERE at the top level — never inside the recursive inner helper — so that
+// sub-slices of a mixed text string are never mis-classified (e.g. a digit-only
+// suffix being treated as a decimal number instead of char-hashed).
 async function textToHex(text) {
   text = text.trim();
   if (/^\d+$/.test(text)) return await decimalToHex(text);
@@ -232,11 +238,18 @@ async function textToHex(text) {
   // Bare hex string (no 0x prefix but only hex chars, with at least one a-f)
   // This handles copy-pasted addresses from the card labels.
   if (/^[0-9a-fA-F]+$/i.test(text) && /[a-fA-F]/.test(text)) return text.toLowerCase();
-  
+  // General text: char-hash the whole string
+  return _textToHexInner(text);
+}
+
+// Pure character-hash helper — no routing, no trim.
+// Recursively splits large inputs to avoid BigInt allocation limits, using the
+// same polynomial formula as the iterative path: h = Σ charCode[i] * 2^(7*(N-1-i))
+async function _textToHexInner(text) {
   if (text.length < 100000) {
-    // No try/catch: if an error occurs here it must propagate, not silently fall
-    // through to the recursive path which uses a different algorithm and would
-    // produce a different address for the same input, breaking determinism.
+    // No try/catch: errors must propagate so the recursive path (different
+    // algorithm shape) never silently produces a different address for the same
+    // input, which would break determinism.
     let h = 0n;
     for (let i = 0; i < text.length; i++) h = (h << 7n) + BigInt(text.charCodeAt(i));
     return h.toString(16);
@@ -246,13 +259,13 @@ async function textToHex(text) {
   if (text.length > 500000) await new Promise(r => setTimeout(r, 0));
 
   const mid = Math.floor(text.length / 2);
-  const hi = await textToHex(text.slice(0, mid));
-  const lo = await textToHex(text.slice(mid));
-  
+  const hi = await _textToHexInner(text.slice(0, mid));
+  const lo = await _textToHexInner(text.slice(mid));
+
   const bits = (text.length - mid) * 7;
   const hexShift = Math.floor(bits / 4);
   const bitRem = bits % 4;
-  
+
   let shiftedHi = hi;
   if (bitRem > 0) {
     shiftedHi = hexMul(hi, 1 << bitRem);
